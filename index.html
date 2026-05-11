@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>割引計算アプリ</title>
+<style>
+  body {
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    padding: 20px;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .app-container {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
+  .input-group {
+    margin-bottom: 20px;
+  }
+  .input-group label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 15px;
+    font-size: 32px;
+    text-align: right;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="number"]:focus {
+    border-color: #ff9800;
+  }
+  .history {
+    font-size: 14px;
+    color: #888;
+    min-height: 20px;
+    margin-bottom: 5px;
+    word-wrap: break-word;
+    font-weight: bold;
+  }
+  .result-box {
+    background: #fff3e0;
+    padding: 25px 20px;
+    border-radius: 10px;
+    text-align: right;
+    margin-bottom: 25px;
+    border: 2px solid #ffe0b2;
+  }
+  .result-box h2 {
+    margin: 0;
+    font-size: 42px;
+    color: #e65100;
+  }
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  button {
+    padding: 20px 10px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.1s, opacity 0.2s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  }
+  button:active {
+    transform: scale(0.95);
+  }
+  .btn-percent { background: #ff9800; }
+  .btn-reset { 
+    background: #757575; 
+    margin-top: 10px;
+    padding: 15px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="input-group">
+      <label for="inputPrice">元の金額を入力 (最大6桁)</label>
+      <input type="number" id="inputPrice" placeholder="例: 128000" oninput="handleInput()">
+    </div>
+
+    <div class="history" id="historyText">適用順: なし</div>
+    
+    <div class="result-box">
+      <h2 id="resultPrice">0円</h2>
+    </div>
+
+    <div class="btn-grid">
+      <div class="btn-row">
+        <button class="btn-percent" onclick="applyDiscount(0.5, '50%OFF')">50%<br>OFF</button>
+        <button class="btn-percent" onclick="applyDiscount(0.75, '25%OFF')">25%<br>OFF</button>
+        <button class="btn-percent" onclick="applyDiscount(0.9, '10%OFF')">10%<br>OFF</button>
+      </div>
+      <button class="btn-reset" onclick="resetCalculations()">リセット (元に戻す)</button>
+    </div>
+  </div>
+
+  <script>
+    let currentPrice = 0;
+    let discountHistory = [];
+
+    // 入力時の処理（6桁制限と初期化）
+    function handleInput() {
+      const input = document.getElementById('inputPrice');
+      
+      // 6桁以上の入力があった場合は切り捨てる
+      if (input.value.length > 6) {
+        input.value = input.value.slice(0, 6);
+      }
+      
+      resetToInput();
+    }
+
+    // %オフの計算
+    function applyDiscount(rate, label) {
+      if (currentPrice <= 0) return; // 0円以下の場合は計算しない
+      
+      // 端数が出た場合は切り捨て
+      currentPrice = Math.floor(currentPrice * rate);
+      discountHistory.push(label);
+      updateDisplay();
+    }
+
+    // 割引状態だけをリセットし、入力した元の金額に戻す
+    function resetToInput() {
+      const inputVal = document.getElementById('inputPrice').value;
+      currentPrice = parseInt(inputVal) || 0;
+      discountHistory = [];
+      updateDisplay();
+    }
+
+    // 全てリセットするボタン用
+    function resetCalculations() {
+      document.getElementById('inputPrice').value = '';
+      currentPrice = 0;
+      discountHistory = [];
+      updateDisplay();
+    }
+
+    // 画面の表示を更新する
+    function updateDisplay() {
+      // 3桁区切りのカンマをつけて表示
+      document.getElementById('resultPrice').innerText = currentPrice.toLocaleString() + '円';
+      
+      // 割引の履歴を表示
+      if (discountHistory.length > 0) {
+        document.getElementById('historyText').innerText = '適用順: ' + discountHistory.join(' ➔ ');
+      } else {
+        document.getElementById('historyText').innerText = '適用順: なし';
+      }
+    }
+  </script>
+
+</body>
+</html>
